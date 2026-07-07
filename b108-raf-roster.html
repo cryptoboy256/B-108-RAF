@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>B/108 RAF — Unit Roster &amp; Duty Board</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --paper:#E7E4DB;
+    --panel:#F2F0E8;
+    --panel-alt:#EAE7DC;
+    --line:#D8D4C4;
+    --olive:#3A4024;
+    --olive-2:#4A522F;
+    --khaki:#A69A73;
+    --amber:#C97A2B;
+    --green:#56683A;
+    --tan:#8A7B4E;
+    --red:#B5482F;
+    --ink:#24261F;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;}
+  .rb-display{font-family:'Oswald',sans-serif;letter-spacing:.04em;}
+  .rb-mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  button{cursor:pointer;font-family:inherit;}
+  button:disabled{cursor:not-allowed;}
+  input,select,textarea{font-family:inherit;}
+  input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,.rb-row:focus-visible,.rb-tile:focus-visible{
+    outline:2px solid var(--amber); outline-offset:2px;
+  }
+  .wrap{max-width:1024px;margin:0 auto;padding:0 16px;}
+  header.top{position:sticky;top:0;z-index:20;background:var(--olive);color:var(--paper);}
+  header.top .inner{max-width:1024px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0;}
+  .brand h1{font-size:22px;margin:0;font-weight:600;}
+  .brand p{margin:0;font-size:11px;opacity:.75;}
+  .back-btn{font-size:11px;padding:6px 10px;border-radius:4px;background:var(--olive-2);color:var(--paper);border:none;}
+  .navwrap{display:flex;align-items:center;gap:10px;}
+  .badge{font-family:'IBM Plex Mono',monospace;font-size:12px;padding:5px 10px;border-radius:4px;background:var(--amber);color:var(--ink);}
+  .navbtn{font-size:11px;padding:7px 12px;border-radius:4px;border:1px solid var(--khaki);background:transparent;color:var(--paper);}
+  .navbtn.active{background:var(--paper);color:var(--olive);}
+  .savestate{font-size:11px;font-family:'IBM Plex Mono',monospace;opacity:.7;}
+  main{padding:32px 16px 64px;}
+  .section{margin-bottom:40px;}
+  .section-label{display:flex;align-items:baseline;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--amber);}
+  .section-title{font-family:'Oswald',sans-serif;font-size:18px;font-weight:600;color:var(--olive);margin:0;}
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  thead tr{background:var(--olive);color:var(--paper);}
+  thead th{text-align:left;font-family:'Oswald',sans-serif;font-weight:500;font-size:11px;letter-spacing:.04em;padding:10px 12px;}
+  thead th.right{text-align:right;}
+  tbody td{padding:10px 12px;border-top:1px solid var(--line);}
+  .table-wrap{overflow-x:auto;border-radius:6px;border:1px solid var(--khaki);}
+  .dist-table tbody tr:nth-child(odd){background:var(--panel);}
+  .dist-table tbody tr:nth-child(even){background:var(--panel-alt);}
+  .dist-total{background:#DCD6BE !important;font-weight:600;}
+  .tag{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:4px 8px;border-radius:4px;color:#F2F0E8;display:inline-block;}
+  .tag-GO{background:var(--olive);}
+  .tag-SO{background:var(--green);}
+  .tag-ORS{background:var(--tan);}
+  .mess-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  @media (max-width:700px){.mess-grid{grid-template-columns:1fr;}}
+  .mess-card{border:1px solid var(--khaki);background:var(--panel);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:8px;}
+  .mess-card .top{display:flex;justify-content:space-between;align-items:center;}
+  .mess-card .name{font-family:'Oswald',sans-serif;font-weight:600;font-size:14px;color:var(--olive);}
+  .mess-card .who{font-size:12px;opacity:.8;margin:0;}
+  .mess-card .note{font-size:12px;color:#5A5540;border-top:1px solid var(--line);padding-top:8px;margin:4px 0 0;}
+  .cta{font-family:'Oswald',sans-serif;font-size:14px;padding:10px 20px;border-radius:5px;background:var(--olive);color:var(--paper);border:none;}
+  .teams-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  @media (max-width:700px){.teams-grid{grid-template-columns:repeat(2,1fr);}}
+  .tile{text-align:left;border-radius:8px;padding:16px;border:1px solid var(--khaki);background:var(--panel);transition:transform .15s;}
+  .tile:hover{transform:translateY(-2px);}
+  .tile-top{display:flex;justify-content:space-between;align-items:flex-start;}
+  .tile-num{font-family:'Oswald',sans-serif;font-size:30px;font-weight:700;color:var(--olive);}
+  .tile-count{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:3px 6px;border-radius:4px;color:#F2F0E8;}
+  .tile-label{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.04em;opacity:.7;margin:2px 0 0;}
+  .dotgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-top:12px;}
+  .dot{width:10px;height:10px;border-radius:50%;}
+  .dot-filled{background:var(--olive);}
+  .dot-empty{background:transparent;border:1.5px solid var(--khaki);}
+  .roster-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+  .search-input{font-size:14px;padding:9px 12px;border-radius:5px;border:1px solid var(--khaki);background:var(--panel);width:260px;max-width:100%;}
+  .expand-row{background:#DCD6BE;}
+  .expand-inner{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:14px 16px;}
+  @media (max-width:640px){.expand-inner{grid-template-columns:1fr;}}
+  .courses-wrap{display:flex;flex-wrap:wrap;gap:6px;}
+  .course-chip{font-family:'IBM Plex Mono',monospace;font-size:11px;padding:4px 8px;border-radius:4px;background:var(--green);color:#F2F0E8;}
+  .remark-box{width:100%;font-size:13px;padding:8px 10px;border-radius:5px;border:1px solid var(--khaki);background:var(--panel);resize:vertical;}
+  .status-pill{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:4px 8px;border-radius:4px;color:#F2F0E8;}
+  .status-ok{background:var(--green);}
+  .status-warn{background:var(--amber);}
+  .status-muted{background:var(--khaki);}
+  .row-actions{text-align:right;white-space:nowrap;}
+  .btn-sm{font-size:11px;padding:5px 10px;border-radius:4px;border:none;margin-left:4px;}
+  .btn-edit{background:var(--olive);color:var(--paper);}
+  .btn-clear{background:var(--red);color:#F2F0E8;}
+  .name-empty{opacity:.45;font-style:italic;}
+  .modal-overlay{position:fixed;inset:0;background:rgba(36,38,31,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:30;}
+  .modal{width:100%;max-width:520px;max-height:90vh;overflow-y:auto;background:var(--panel);border-radius:8px;padding:22px;}
+  .modal h3{font-family:'Oswald',sans-serif;font-size:18px;font-weight:600;color:var(--olive);margin:0 0 16px;}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;opacity:.6;margin-bottom:4px;}
+  .field input,.field select,.field textarea{width:100%;font-size:14px;padding:8px 10px;border-radius:5px;border:1px solid var(--khaki);}
+  .course-add-row{display:flex;gap:8px;margin-bottom:8px;}
+  .course-add-row input{flex:1;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;}
+  .btn-outline{background:transparent;border:1px solid var(--khaki);color:var(--olive);}
+  .btn-solid{background:var(--olive);color:var(--paper);border:none;}
+  .btn-solid:disabled{opacity:.4;}
+  .chip-x{background:none;border:none;color:inherit;opacity:.85;margin-left:4px;cursor:pointer;padding:0;font-size:12px;}
+  .muted-cell{opacity:.5;}
+</style>
+</head>
+<body>
+<header class="top"><div class="inner" id="headerInner"></div></header>
+<main class="wrap" id="main"></main>
+<div id="modalRoot"></div>
+
+<script>
+/* ---------------------------------------------------------
+   B/108 RAF — Unit Roster & Duty Board (vanilla JS build)
+--------------------------------------------------------- */
+const TEAM_IDS = [9,10,11,12,13,14,15,16];
+const SLOTS_PER_TEAM = 24;
+const STORAGE_KEY = "b108-raf-roster-v1";
+const RANKS = ["Deputy Commandant","Assistant Commandant","Inspector","Sub-Inspector","Assistant Sub-Inspector","Head Constable","Constable"];
+
+const DISTRIBUTION = [
+  { rank: "Deputy Commandant (Company Commander)", count: "1", mess: "GO" },
+  { rank: "Assistant Commandant (2IC/Admin)", count: "1", mess: "GO" },
+  { rank: "Inspectors", count: "8–10", mess: "SO" },
+  { rank: "Sub-Inspectors", count: "12–16", mess: "SO" },
+  { rank: "Assistant Sub-Inspectors", count: "18–24", mess: "SO" },
+  { rank: "Head Constables", count: "35–45", mess: "ORS" },
+  { rank: "Constables (GD & specialists)", count: "125–145", mess: "ORS" },
+];
+
+const MESS_INFO = [
+  { key:"GO", label:"GO's Mess", who:"Deputy Commandant → Assistant Commandant", note:"Gazetted Officers' mess. Separate building." },
+  { key:"SO", label:"SO's Mess", who:"Inspector → Assistant Sub-Inspector", note:"Subordinate Officers' mess. Separate building." },
+  { key:"ORS", label:"ORS Mess", who:"Head Constable → Constable", note:"Other Ranks' mess. Room capacity 15 per room, bed strength 10 per room." },
+];
+
+function blankMember(teamId, slot){
+  return { id:`t${teamId}-s${slot}`, slot, filled:false, name:"", forceNo:"", rank:"Constable", mobile:"", ameDate:"", courses:[], remarks:"" };
+}
+function defaultRoster(){
+  const r = {};
+  TEAM_IDS.forEach(t => { r[t] = Array.from({length:SLOTS_PER_TEAM}, (_,i)=>blankMember(t,i+1)); });
+  return r;
+}
+function ameStatus(dateStr){
+  if(!dateStr) return { label:"Not recorded", tone:"muted" };
+  const d = new Date(dateStr);
+  if(isNaN(d.getTime())) return { label:"Not recorded", tone:"muted" };
+  const days = (Date.now()-d.getTime())/86400000;
+  if(days>365) return { label:"Overdue", tone:"warn" };
+  return { label:"Current", tone:"ok" };
+}
+function esc(str){
+  return String(str==null?"":str).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+const state = {
+  roster: null,
+  view: "dashboard", // dashboard | teams | roster
+  selectedTeam: null,
+  search: "",
+  expandedId: null,
+  saveState: "idle",
+};
+
+async function loadRoster(){
+  try{
+    const result = await window.storage.get(STORAGE_KEY, true);
+    state.roster = result ? JSON.parse(result.value) : defaultRoster();
+  }catch(e){
+    state.roster = defaultRoster();
+  }
+}
+async function persist(){
+  state.saveState = "saving";
+  renderHeader();
+  try{
+    const result = await window.storage.set(STORAGE_KEY, JSON.stringify(state.roster), true);
+    state.saveState = result ? "saved" : "error";
+  }catch(e){
+    state.saveState = "error";
+  }
+  renderHeader();
+  setTimeout(()=>{ if(state.saveState!=="saving"){ state.saveState="idle"; renderHeader(); } }, 1500);
+}
+
+function totalFilled(){
+  return TEAM_IDS.reduce((sum,t)=> sum + state.roster[t].filter(m=>m.filled).length, 0);
+}
+
+/* ---------------- HEADER ---------------- */
+function renderHeader(){
+  const el = document.getElementById("headerInner");
+  const showBack = state.view === "roster";
+  el.innerHTML = `
+    <div class="brand">
+      ${showBack ? `<button class="back-btn rb-display" id="btnBack">← TEAMS</button>` : ``}
+      <div>
+        <h1 class="rb-display">B/108 RAF</h1>
+        <p>Unit Roster &amp; Duty Board</p>
+      </div>
+    </div>
+    <div class="navwrap">
+      <span class="savestate">${state.saveState==="saving"?"saving…":state.saveState==="error"?"save failed":""}</span>
+      <div class="badge">${totalFilled()}/${TEAM_IDS.length*SLOTS_PER_TEAM}</div>
+      <nav style="display:flex;gap:6px;">
+        <button class="navbtn rb-display ${state.view==='dashboard'?'active':''}" id="navDash">DASHBOARD</button>
+        <button class="navbtn rb-display ${state.view==='teams'||state.view==='roster'?'active':''}" id="navTeams">TEAMS</button>
+      </nav>
+    </div>
+  `;
+  document.getElementById("navDash").onclick = () => { state.view="dashboard"; renderAll(); };
+  document.getElementById("navTeams").onclick = () => { state.view="teams"; state.selectedTeam=null; renderAll(); };
+  if(showBack) document.getElementById("btnBack").onclick = () => { state.view="teams"; state.selectedTeam=null; state.search=""; renderAll(); };
+}
+
+/* ---------------- DASHBOARD ---------------- */
+function renderDashboard(){
+  const rows = DISTRIBUTION.map((row,i)=>`
+    <tr style="background:${i%2? 'var(--panel-alt)':'var(--panel)'}">
+      <td>${esc(row.rank)}</td>
+      <td class="rb-mono" style="text-align:right;">${esc(row.count)}</td>
+      <td><span class="tag tag-${row.mess}">${row.mess==='GO'?"GO's Mess":row.mess==='SO'?"SO's Mess":"ORS Mess"}</span></td>
+    </tr>`).join("");
+
+  const messCards = MESS_INFO.map(m=>`
+    <div class="mess-card">
+      <div class="top">
+        <span class="name">${esc(m.label)}</span>
+        <span class="tag tag-${m.key}">${esc(m.label)}</span>
+      </div>
+      <p class="who">${esc(m.who)}</p>
+      <p class="note">${esc(m.note)}</p>
+    </div>`).join("");
+
+  return `
+    <div class="section" style="padding-top:8px;">
+      <div class="section-label"><span class="eyebrow">Sanctioned Strength</span><h2 class="section-title">Distribution</h2></div>
+      <div class="table-wrap">
+        <table class="dist-table">
+          <thead><tr><th>RANK</th><th class="right" style="text-align:right;">STRENGTH</th><th>MESS</th></tr></thead>
+          <tbody>
+            ${rows}
+            <tr class="dist-total"><td class="rb-display" style="font-size:12px;">TOTAL</td><td class="rb-mono" style="text-align:right;">≈220</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label"><span class="eyebrow">Accommodation</span><h2 class="section-title">Mess Allocation</h2></div>
+      <div class="mess-grid">${messCards}</div>
+    </div>
+
+    <div class="section">
+      <div class="section-label"><span class="eyebrow">Field Teams</span><h2 class="section-title">Team 09 – Team 16</h2></div>
+      <p style="font-size:14px;opacity:.8;margin-bottom:14px;">8 teams, 24 personnel each. Open a team to view its muster roll — force number, rank, mobile, AME date, courses and remarks for every member.</p>
+      <button class="cta rb-display" id="btnGoTeams">OPEN TEAMS →</button>
+    </div>
+  `;
+}
+
+/* ---------------- TEAMS GRID ---------------- */
+function renderTeams(){
+  const tiles = TEAM_IDS.map(t=>{
+    const members = state.roster[t];
+    const filled = members.filter(m=>m.filled).length;
+    const dots = members.map(m=>`<span class="dot ${m.filled?'dot-filled':'dot-empty'}"></span>`).join("");
+    return `
+      <button class="tile" data-team="${t}">
+        <div class="tile-top">
+          <span class="tile-num">${String(t).padStart(2,"0")}</span>
+          <span class="tile-count" style="background:${filled===SLOTS_PER_TEAM?'var(--green)':'var(--amber)'}">${filled}/${SLOTS_PER_TEAM}</span>
+        </div>
+        <p class="tile-label">TEAM</p>
+        <div class="dotgrid">${dots}</div>
+      </button>`;
+  }).join("");
+
+  return `
+    <div class="section" style="padding-top:8px;">
+      <div class="section-label"><span class="eyebrow">Duty Board</span><h2 class="section-title">Select a Team</h2></div>
+      <div class="teams-grid">${tiles}</div>
+    </div>
+  `;
+}
+
+/* ---------------- ROSTER VIEW ---------------- */
+function filteredMembers(){
+  const members = state.roster[state.selectedTeam];
+  if(!state.search.trim()) return members;
+  const q = state.search.toLowerCase();
+  return members.filter(m => m.name.toLowerCase().includes(q) || m.forceNo.toLowerCase().includes(q));
+}
+
+function renderRosterShell(){
+  return `
+    <div class="section" style="padding-top:8px;">
+      <div class="roster-head">
+        <div class="section-label" style="margin-bottom:0;"><span class="eyebrow">Team ${String(state.selectedTeam).padStart(2,"0")}</span><h2 class="section-title">Muster Roll</h2></div>
+        <input type="text" class="search-input" id="searchInput" placeholder="Search name or force no…" value="${esc(state.search)}" />
+      </div>
+      <div class="table-wrap">
+        <div style="overflow-x:auto;">
+          <table style="min-width:720px;">
+            <thead>
+              <tr>
+                <th style="width:56px;">SLOT</th><th>NAME</th><th>FORCE NO</th><th>RANK</th><th>MOBILE</th><th>AME</th><th class="right" style="text-align:right;">ACTION</th>
+              </tr>
+            </thead>
+            <tbody id="rosterBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderRosterBody(){
+  const tbody = document.getElementById("rosterBody");
+  if(!tbody) return;
+  const list = filteredMembers();
+  if(list.length===0){
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;opacity:.5;font-style:italic;">No one matches "${esc(state.search)}"</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map((m,i)=>{
+    const status = ameStatus(m.ameDate);
+    const expanded = state.expandedId === m.id;
+    const rowBg = i%2 ? 'var(--panel-alt)' : 'var(--panel)';
+    let html = `
+      <tr class="rb-row" style="background:${rowBg};cursor:${m.filled?'pointer':'default'};" data-rowid="${m.id}">
+        <td class="rb-mono muted-cell">${String(m.slot).padStart(2,"0")}</td>
+        <td>${m.filled ? esc(m.name) : '<span class="name-empty">Empty slot</span>'}</td>
+        <td class="rb-mono">${esc(m.forceNo) || "—"}</td>
+        <td>${m.filled ? esc(m.rank) : "—"}</td>
+        <td class="rb-mono">${m.mobile ? `<a href="tel:${esc(m.mobile)}" data-nostop="1" style="text-decoration:underline dotted;">${esc(m.mobile)}</a>` : "—"}</td>
+        <td>${m.filled ? `<span class="status-pill status-${status.tone}">${status.label}</span>` : "—"}</td>
+        <td class="row-actions">
+          <button class="btn-sm btn-edit" data-editid="${m.id}">${m.filled?"Edit":"Add"}</button>
+          ${m.filled ? `<button class="btn-sm btn-clear" data-clearslot="${m.slot}" data-clearname="${esc(m.name)}">Clear</button>` : ``}
+        </td>
+      </tr>`;
+    if(expanded && m.filled){
+      const courseChips = m.courses.length
+        ? `<div class="courses-wrap">${m.courses.map(c=>`<span class="course-chip">${esc(c)}</span>`).join("")}</div>`
+        : `<p style="font-size:12px;font-style:italic;opacity:.5;">No courses recorded</p>`;
+      html += `
+        <tr class="expand-row">
+          <td colspan="7">
+            <div class="expand-inner">
+              <div>
+                <p class="rb-mono" style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;opacity:.6;margin:0 0 6px;">Courses</p>
+                ${courseChips}
+              </div>
+              <div>
+                <p class="rb-mono" style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;opacity:.6;margin:0 0 6px;">Remarks</p>
+                <textarea class="remark-box" rows="2" placeholder="Add a remark…" data-remarkid="${m.id}">${esc(m.remarks)}</textarea>
+              </div>
+            </div>
+          </td>
+        </tr>`;
+    }
+    return html;
+  }).join("");
+
+  // bind row/expand clicks
+  tbody.querySelectorAll(".rb-row").forEach(row=>{
+    row.addEventListener("click", (e)=>{
+      if(e.target.closest("[data-nostop]") || e.target.closest("button")) return;
+      const id = row.getAttribute("data-rowid");
+      const member = state.roster[state.selectedTeam].find(m=>m.id===id);
+      if(!member.filled) return;
+      state.expandedId = state.expandedId===id ? null : id;
+      renderRosterBody();
+    });
+  });
+  tbody.querySelectorAll("[data-editid]").forEach(btn=>{
+    btn.addEventListener("click",(e)=>{
+      e.stopPropagation();
+      const id = btn.getAttribute("data-editid");
+      const member = state.roster[state.selectedTeam].find(m=>m.id===id);
+      openModal(member);
+    });
+  });
+  tbody.querySelectorAll("[data-clearslot]").forEach(btn=>{
+    btn.addEventListener("click",(e)=>{
+      e.stopPropagation();
+      const slot = Number(btn.getAttribute("data-clearslot"));
+      const name = btn.getAttribute("data-clearname");
+      if(window.confirm(`Clear slot ${slot}? This removes ${name}'s record.`)){
+        const t = state.selectedTeam;
+        state.roster[t] = state.roster[t].map(m=> m.slot===slot ? blankMember(t,slot) : m);
+        persist();
+        renderRosterBody();
+        renderHeader();
+      }
+    });
+  });
+  tbody.querySelectorAll("[data-remarkid]").forEach(ta=>{
+    ta.addEventListener("blur",(e)=>{
+      const id = ta.getAttribute("data-remarkid");
+      const t = state.selectedTeam;
+      state.roster[t] = state.roster[t].map(m=> m.id===id ? {...m, remarks: ta.value} : m);
+      persist();
+    });
+  });
+}
+
+/* ---------------- MODAL ---------------- */
+let modalDraft = null;
+
+function openModal(member){
+  modalDraft = { ...member, courses: [...(member.courses||[])] };
+  renderModal();
+}
+function closeModal(){
+  modalDraft = null;
+  document.getElementById("modalRoot").innerHTML = "";
+}
+function renderModal(){
+  const root = document.getElementById("modalRoot");
+  if(!modalDraft){ root.innerHTML=""; return; }
+  const m = modalDraft;
+  const rankOptions = RANKS.map(r=>`<option value="${esc(r)}" ${r===m.rank?"selected":""}>${esc(r)}</option>`).join("");
+  const courseChips = m.courses.map((c,idx)=>`<span class="course-chip">${esc(c)}<button class="chip-x" data-removecourse="${idx}">×</button></span>`).join("");
+  root.innerHTML = `
+    <div class="modal-overlay" id="modalOverlay">
+      <div class="modal" id="modalBox">
+        <h3>Slot ${String(m.slot).padStart(2,"0")} — ${m.filled ? "Edit Record" : "Add Personnel"}</h3>
+        <div class="field"><label>Name</label><input id="fName" value="${esc(m.name)}" placeholder="Full name" /></div>
+        <div class="field"><label>Force No</label><input id="fForceNo" class="rb-mono" value="${esc(m.forceNo)}" placeholder="e.g. RAF/12345" /></div>
+        <div class="field"><label>Rank</label><select id="fRank">${rankOptions}</select></div>
+        <div class="field"><label>Mobile</label><input id="fMobile" class="rb-mono" value="${esc(m.mobile)}" placeholder="10-digit number" /></div>
+        <div class="field"><label>AME Date</label><input id="fAme" type="date" class="rb-mono" value="${esc(m.ameDate)}" /></div>
+        <div class="field">
+          <label>Courses</label>
+          <div class="course-add-row">
+            <input id="fCourseDraft" placeholder="e.g. Commando Course" />
+            <button class="btn-sm btn-edit" id="btnAddCourse">Add</button>
+          </div>
+          <div class="courses-wrap" id="courseChips">${courseChips}</div>
+        </div>
+        <div class="field"><label>Remarks</label><textarea id="fRemarks" rows="3" placeholder="Optional remarks">${esc(m.remarks)}</textarea></div>
+        <div class="modal-actions">
+          <button class="btn-sm btn-outline rb-display" id="btnCancel" style="padding:8px 16px;">CANCEL</button>
+          <button class="btn-sm btn-solid rb-display" id="btnSave" style="padding:8px 16px;">SAVE RECORD</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("modalOverlay").addEventListener("click",(e)=>{ if(e.target.id==="modalOverlay") closeModal(); });
+  document.getElementById("btnCancel").onclick = closeModal;
+  document.getElementById("fName").oninput = (e)=>{ modalDraft.name = e.target.value; syncSaveState(); };
+  document.getElementById("fForceNo").oninput = (e)=>{ modalDraft.forceNo = e.target.value; syncSaveState(); };
+  document.getElementById("fRank").onchange = (e)=>{ modalDraft.rank = e.target.value; };
+  document.getElementById("fMobile").oninput = (e)=>{ modalDraft.mobile = e.target.value; };
+  document.getElementById("fAme").onchange = (e)=>{ modalDraft.ameDate = e.target.value; };
+  document.getElementById("fRemarks").oninput = (e)=>{ modalDraft.remarks = e.target.value; };
+  document.getElementById("btnAddCourse").onclick = ()=>{
+    const input = document.getElementById("fCourseDraft");
+    const v = input.value.trim();
+    if(!v) return;
+    modalDraft.courses.push(v);
+    input.value = "";
+    renderModal();
+    document.getElementById("fCourseDraft").focus();
+  };
+  document.getElementById("fCourseDraft").addEventListener("keydown",(e)=>{
+    if(e.key==="Enter"){ e.preventDefault(); document.getElementById("btnAddCourse").click(); }
+  });
+  root.querySelectorAll("[data-removecourse]").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const idx = Number(btn.getAttribute("data-removecourse"));
+      modalDraft.courses.splice(idx,1);
+      renderModal();
+    });
+  });
+  syncSaveState();
+
+  function syncSaveState(){
+    const btn = document.getElementById("btnSave");
+    const ok = modalDraft.name.trim() && modalDraft.forceNo.trim();
+    btn.disabled = !ok;
+    btn.onclick = ()=>{
+      if(!ok) return;
+      const t = state.selectedTeam;
+      const finalMember = { ...modalDraft, filled:true };
+      state.roster[t] = state.roster[t].map(mm=> mm.id===finalMember.id ? finalMember : mm);
+      persist();
+      closeModal();
+      renderRosterBody();
+      renderHeader();
+      renderTeamsIfVisible();
+    };
+  }
+}
+function renderTeamsIfVisible(){
+  if(state.view==="teams") renderMain();
+}
+
+/* ---------------- MAIN RENDER ---------------- */
+function renderMain(){
+  const main = document.getElementById("main");
+  if(state.view==="dashboard"){
+    main.innerHTML = renderDashboard();
+    document.getElementById("btnGoTeams").onclick = () => { state.view="teams"; renderAll(); };
+  } else if(state.view==="teams"){
+    main.innerHTML = renderTeams();
+    main.querySelectorAll("[data-team]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        state.selectedTeam = Number(btn.getAttribute("data-team"));
+        state.view = "roster";
+        state.search = "";
+        state.expandedId = null;
+        renderAll();
+      });
+    });
+  } else if(state.view==="roster"){
+    main.innerHTML = renderRosterShell();
+    renderRosterBody();
+    const input = document.getElementById("searchInput");
+    input.addEventListener("input",(e)=>{
+      state.search = e.target.value;
+      renderRosterBody();
+    });
+  }
+}
+
+function renderAll(){
+  renderHeader();
+  renderMain();
+}
+
+/* ---------------- INIT ---------------- */
+(async function init(){
+  document.getElementById("main").innerHTML = `<p class="rb-display" style="padding-top:60px;text-align:center;letter-spacing:.15em;color:var(--olive);">LOADING MUSTER ROLL…</p>`;
+  await loadRoster();
+  renderAll();
+})();
+</script>
+</body>
+</html>
